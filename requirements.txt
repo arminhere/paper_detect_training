@@ -12,3 +12,8 @@ onnxscript
 onnxruntime
 tensorflow
 onnx2tf
+tf-keras
+onnx_graphsurgeon
+psutil
+ai_edge_litert
+sng4onnx
