@@ -70,6 +70,7 @@ python export.py
 
 For mobile and embedded deployments, TensorFlow Lite is preferred. We convert the ONNX model directly to TFLite using the `onnx2tf` library.
 
+*** pip install --upgrade onnx2tf ***
 Run the conversion script:
 
 ```bash
