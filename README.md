@@ -1,3 +1,4 @@
+### IMPORTANT : GENRATED WITH GEMINI 3.1 AND CLAUDE OPUS 4.6
 # Document Corner Detection (DocCornerNet)
 
 This project contains a complete, end-to-end pipeline for training and deploying an AI-based document corner detection model. It uses a lightweight PyTorch model (MobileNetV3-Small backbone) to predict the 4 corners of a document in an image, which is then used to perform a perspective transformation (warping) to create a clean, flat scan.
