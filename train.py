@@ -10,9 +10,18 @@ from model import DocumentCornerNet
 from dataset import DocumentCornerDataset
 
 def train(epochs=10, batch_size=16, learning_rate=1e-3, img_size=256, heatmap_size=64):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Using device: {device}")
-    
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+        # Enable cudnn benchmark for faster training if input sizes are constant
+        torch.backends.cudnn.benchmark = True
+        print(f"Using NVIDIA GPU: {torch.cuda.get_device_name(0)}")
+    elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+        device = torch.device('mps')
+        print("Using Apple Silicon GPU (MPS)")
+    else:
+        device = torch.device('cpu')
+        print("WARNING: No GPU detected. Using CPU. Training will be slow!")
+        print("If you have an NVIDIA GPU, ensure you installed PyTorch with CUDA support.")
     # Load dataset
     full_dataset = DocumentCornerDataset('dataset/labels.json', 'dataset/images', img_size=img_size, heatmap_size=heatmap_size)
     
