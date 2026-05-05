@@ -2,7 +2,6 @@ import os
 import cv2
 import numpy as np
 import random
-import urllib.request
 import json
 from PIL import Image, ImageDraw, ImageFont
 from faker import Faker
@@ -10,20 +9,7 @@ from tqdm import tqdm
 
 fake = Faker()
 
-def download_backgrounds(num_images, save_dir):
-    os.makedirs(save_dir, exist_ok=True)
-    existing = len(os.listdir(save_dir))
-    if existing >= num_images:
-        return
-    
-    print(f"Downloading {num_images - existing} backgrounds...")
-    for i in tqdm(range(existing, num_images)):
-        # Using picsum for random background images
-        url = f"https://picsum.photos/800/800?random={i}"
-        try:
-            urllib.request.urlretrieve(url, os.path.join(save_dir, f"bg_{i}.jpg"))
-        except Exception as e:
-            print(f"Failed to download {url}: {e}")
+
 
 def generate_fake_document():
     # Random document size (e.g., A4 ratio)
@@ -108,13 +94,27 @@ def generate_synthetic_image(bg_img, doc_img):
 
 def main():
     bg_dir = "backgrounds"
+    doc_dir = "documents"
     out_dir = "dataset/images"
     os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(bg_dir, exist_ok=True)
+    os.makedirs(doc_dir, exist_ok=True)
+    
+    valid_extensions = ('.jpg', '.jpeg', '.png', '.bmp')
+    bg_files = [os.path.join(bg_dir, f) for f in os.listdir(bg_dir) if f.lower().endswith(valid_extensions)]
+    doc_files = [os.path.join(doc_dir, f) for f in os.listdir(doc_dir) if f.lower().endswith(valid_extensions)]
+    
+    if not bg_files:
+        print(f"Error: No background images found in '{bg_dir}'.")
+        print("Please place your own background photos in the 'backgrounds' folder.")
+        return
+        
+    if not doc_files:
+        print(f"Notice: No custom document photos found in '{doc_dir}'.")
+        print("Falling back to generating synthetic document images.")
+        print("To use your own document photos, place them in the 'documents' folder.")
     
     num_samples = 1000 # Start with 1000 for quick testing
-    download_backgrounds(100, bg_dir)
-    
-    bg_files = [os.path.join(bg_dir, f) for f in os.listdir(bg_dir) if f.endswith('.jpg')]
     
     labels = []
     
@@ -127,8 +127,16 @@ def main():
         # Ensure RGB
         bg_img = cv2.cvtColor(bg_img, cv2.COLOR_BGR2RGB)
         
-        # Generate doc
-        doc_img = generate_fake_document()
+        # Generate or load doc
+        if doc_files:
+            doc_path = random.choice(doc_files)
+            doc_img = cv2.imread(doc_path)
+            if doc_img is not None:
+                doc_img = cv2.cvtColor(doc_img, cv2.COLOR_BGR2RGB)
+            else:
+                doc_img = generate_fake_document()
+        else:
+            doc_img = generate_fake_document()
         
         # Transform and blend
         final_img, corners = generate_synthetic_image(bg_img, doc_img)
